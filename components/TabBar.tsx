@@ -1,27 +1,11 @@
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, StyleSheet } from "react-native";
 import React from "react";
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
-import { FontAwesome6 } from "@expo/vector-icons";
-import { FontAwesome } from "@expo/vector-icons";
-import { Octicons } from "@expo/vector-icons";
+import TabBarButton from "./TabBarButton";
 
-const primaryColor = "#673ab7";
-const secondaryColor = "#222";
-type RouteName = "index" | "(tabs)/Tab1" | "(tabs)/Tab2";
+export type RouteName = "index" | "(tabs)/Tab1" | "(tabs)/Tab2";
 
 const TabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
-  const icons: Record<RouteName, (props: any) => JSX.Element> = {
-    index: (props: any) => (
-      <FontAwesome6 name="tv" size={24} color={secondaryColor} {...props} />
-    ),
-    "(tabs)/Tab1": (props: any) => (
-      <Octicons name="video" size={26} color={secondaryColor} {...props} />
-    ),
-    "(tabs)/Tab2": (props: any) => (
-      <FontAwesome name="user" size={26} color={secondaryColor} {...props} />
-    ),
-  };
-
   return (
     <View style={styles.tabbar}>
       {state.routes.map((route, index) => {
@@ -57,23 +41,14 @@ const TabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
         };
 
         return (
-          <TouchableOpacity
-            key={route.name}
-            style={styles.tabbarItem}
-            accessibilityRole="button"
-            accessibilityState={isFocused ? { selected: true } : {}}
-            accessibilityLabel={options.tabBarAccessibilityLabel}
-            testID={options.tabBarTestID}
+          <TabBarButton
+            key={route.key}
+            route={route}
+            focused={isFocused}
+            label={label}
             onPress={onPress}
             onLongPress={onLongPress}
-          >
-            {icons[route.name as RouteName]({
-              color: isFocused ? primaryColor : secondaryColor,
-            })}
-            <Text style={{ color: isFocused ? "#673ab7" : "#222" }}>
-              {label as string}
-            </Text>
-          </TouchableOpacity>
+          />
         );
       })}
     </View>
