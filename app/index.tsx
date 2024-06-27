@@ -15,6 +15,7 @@ const Index = () => {
         headerTintColor: "#fff",
         headerTitleStyle: {
           fontWeight: "bold",
+          fontFamily: "LoRes15",
         },
       }}
     >

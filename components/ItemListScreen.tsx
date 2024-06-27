@@ -11,6 +11,7 @@ import {
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "@/types";
 import { StatusBar } from "expo-status-bar";
+import { ThemedText } from "./ThemedText";
 
 const DATA = Array.from({ length: 100 }, (v, i) => ({
   id: `${i}`,
@@ -26,7 +27,9 @@ const ItemListScreen = () => {
 
   const renderItem = ({ item }: { item: any }) => (
     <TouchableOpacity style={styles.item} onPress={() => handleItemClick(item)}>
-      <Text style={styles.title}>{item.title}</Text>
+      <ThemedText style={{ ...styles.title, fontFamily: "LoRes15" }}>
+        {item.title}
+      </ThemedText>
     </TouchableOpacity>
   );
 

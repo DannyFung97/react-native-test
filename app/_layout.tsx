@@ -19,6 +19,8 @@ export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
+    LoRes15: require("../assets/fonts/LoRes15OT-Bold.ttf"),
+    NeuePixelSans: require("../assets/fonts/NeuePixelSans.ttf"),
   });
 
   useEffect(() => {
