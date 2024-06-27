@@ -5,40 +5,46 @@ import {
   TouchableOpacity,
   StyleSheet,
   Linking,
+  Button,
 } from "react-native";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "@/types";
+import { FontAwesome } from "@expo/vector-icons";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const Header = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   return (
-    <View style={styles.header}>
-      <TouchableOpacity onPress={() => navigation.navigate("ItemListScreen")}>
-        <Text style={styles.headerTitle}>ItemListScreen</Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => navigation.navigate("Tab1")}>
-        <Text style={styles.headerTitle}>Tab 1</Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => navigation.navigate("TabStack")}>
-        <Text style={styles.headerTitle}>Stack Example</Text>
-      </TouchableOpacity>
+    <SafeAreaView style={styles.header}>
       <TouchableOpacity
-        onPress={() => Linking.openURL("https://www.example.com")}
+        style={styles.headerItem}
+        onPress={() => navigation.navigate("ItemListScreen")}
       >
-        <Text style={styles.headerTitle}>External Link</Text>
+        <FontAwesome name="user" size={26} color={"black"} />
+        <Button
+          title="Sign in"
+          onPress={() => navigation.navigate("ItemListScreen")}
+        />
       </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   header: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
     backgroundColor: "#6200EE",
-    padding: 20,
+    paddingHorizontal: 20,
+  },
+  headerItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderColor: "#fff",
+    borderWidth: 1,
+    paddingHorizontal: 6,
+    borderRadius: 50,
+    margin: "auto",
+    marginLeft: 0,
   },
   headerTitle: {
     fontSize: 20,

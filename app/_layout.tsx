@@ -11,6 +11,8 @@ import { useEffect } from "react";
 import { StyleSheet } from "react-native";
 import { Tabs } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import TabBar from "../components/TabBar";
+import Header from "@/components/Header";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -35,19 +37,12 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <StatusBar style="dark" />
-      <Tabs
-        screenOptions={{
-          headerStyle: {
-            backgroundColor: "#6200EE",
-          },
-          headerTintColor: "#fff",
-        }}
-      >
+      <StatusBar style="light" />
+      <Tabs tabBar={(props) => <TabBar {...props} />}>
         <Tabs.Screen
           name="index"
           options={{
-            tabBarLabel: "Home",
+            tabBarLabel: "Channels",
             headerShown: false,
           }}
         />
