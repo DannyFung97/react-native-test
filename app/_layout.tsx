@@ -13,6 +13,8 @@ import { Tabs } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import TabBar from "../components/TabBar";
 import Header from "@/components/Header";
+import { queryClient } from "../api/client";
+import { QueryClientProvider } from "@tanstack/react-query";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -37,30 +39,32 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <StatusBar style="light" />
-      <Tabs tabBar={(props) => <TabBar {...props} />}>
-        <Tabs.Screen
-          name="index"
-          options={{
-            tabBarLabel: "Channels",
-            headerShown: false,
-          }}
-        />
-        <Tabs.Screen
-          name="(tabs)/Tab1"
-          options={{
-            tabBarLabel: "NFCs",
-            headerShown: false,
-          }}
-        />
-        <Tabs.Screen
-          name="(tabs)/Tab2"
-          options={{
-            tabBarLabel: "Profile",
-            headerShown: false,
-          }}
-        />
-      </Tabs>
+      <QueryClientProvider client={queryClient}>
+        <StatusBar style="light" />
+        <Tabs tabBar={(props) => <TabBar {...props} />}>
+          <Tabs.Screen
+            name="index"
+            options={{
+              tabBarLabel: "Channels",
+              headerShown: false,
+            }}
+          />
+          <Tabs.Screen
+            name="(tabs)/Tab1"
+            options={{
+              tabBarLabel: "NFCs",
+              headerShown: false,
+            }}
+          />
+          <Tabs.Screen
+            name="(tabs)/Profile"
+            options={{
+              tabBarLabel: "Profile",
+              headerShown: false,
+            }}
+          />
+        </Tabs>
+      </QueryClientProvider>
     </ThemeProvider>
   );
 }

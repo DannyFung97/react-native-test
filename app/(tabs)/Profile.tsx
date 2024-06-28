@@ -1,12 +1,14 @@
-import { StatusBar } from "expo-status-bar";
+import ProfileConnect from "@/components/ProfileConnect";
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
+import { StatusBar } from "expo-status-bar";
 
-const Tab2 = () => {
+const Profile = () => {
+  // return <ProfileConnect />;
   return (
     <View style={styles.container}>
       <StatusBar style="dark" />
-      <Text style={styles.title}>Tab 2 Content</Text>
+      <Text style={styles.title}>User</Text>
     </View>
   );
 };
@@ -23,4 +25,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Tab2;
+export default Profile;

@@ -17,7 +17,7 @@ const Header = () => {
 
   return (
     <SafeAreaView style={styles.header}>
-      <TouchableOpacity
+      {/* <TouchableOpacity
         style={styles.headerItem}
         onPress={() => navigation.navigate("ItemListScreen")}
       >
@@ -26,7 +26,7 @@ const Header = () => {
           title="Sign in"
           onPress={() => navigation.navigate("ItemListScreen")}
         />
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </SafeAreaView>
   );
 };

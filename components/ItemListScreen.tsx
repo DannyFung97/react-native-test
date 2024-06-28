@@ -7,29 +7,48 @@ import {
   TouchableOpacity,
   StyleSheet,
   SafeAreaView,
+  Image,
 } from "react-native";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "@/types";
 import { StatusBar } from "expo-status-bar";
 import { ThemedText } from "./ThemedText";
+import { useChannels } from "@/api/queries/useChannels";
+import centerEllipses from "@/utils/centerEllipses";
 
-const DATA = Array.from({ length: 100 }, (v, i) => ({
-  id: `${i}`,
-  title: `Item ${i}`,
-}));
+const unlonelyAvatar = "../assets/images/unlonely-icon-192x192.png";
 
 const ItemListScreen = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
+  const { data, isLoading, isError } = useChannels({
+    data: {},
+  });
+
   const handleItemClick = (item: any) => {
-    navigation.navigate("ItemDetail", { slug: item.id as string });
+    navigation.navigate("Channel", { slug: item.id as string });
   };
 
   const renderItem = ({ item }: { item: any }) => (
     <TouchableOpacity style={styles.item} onPress={() => handleItemClick(item)}>
-      <ThemedText style={{ ...styles.title, fontFamily: "LoRes15" }}>
-        {item.title}
-      </ThemedText>
+      <View style={styles.row}>
+        <Image
+          style={styles.avatar}
+          source={
+            item.owner.FCImageUrl
+              ? { uri: item.owner.FCImageUrl }
+              : require(unlonelyAvatar)
+          }
+        />
+        <View style={styles.col}>
+          <ThemedText style={{ ...styles.title, fontFamily: "LoRes15" }}>
+            {item.name}
+          </ThemedText>
+          <Text>
+            {item.owner.username ?? centerEllipses(item.owner.address, 15)}
+          </Text>
+        </View>
+      </View>
     </TouchableOpacity>
   );
 
@@ -45,15 +64,17 @@ const ItemListScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="light" />
-      <FlatList
-        data={DATA}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        getItemLayout={getItemLayout}
-        initialNumToRender={20} // Adjust based on the expected screen size
-        maxToRenderPerBatch={10} // Adjust based on performance
-        windowSize={5} // Adjust based on performance
-      />
+      {data?.getChannelFeed && data?.getChannelFeed?.length > 0 && (
+        <FlatList
+          data={data.getChannelFeed}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id}
+          getItemLayout={getItemLayout}
+          initialNumToRender={20} // Adjust based on the expected screen size
+          maxToRenderPerBatch={10} // Adjust based on performance
+          windowSize={5} // Adjust based on performance
+        />
+      )}
     </SafeAreaView>
   );
 };
@@ -61,9 +82,23 @@ const ItemListScreen = () => {
 const ITEM_HEIGHT = 100; // Example fixed height for items
 
 const styles = StyleSheet.create({
+  avatar: {
+    borderRadius: 25,
+    width: 50,
+    height: 50,
+  },
   container: {
     flex: 1,
     backgroundColor: "#fff",
+  },
+  row: {
+    flexDirection: "row",
+    gap: 10,
+    alignItems: "center",
+  },
+  col: {
+    flexDirection: "column",
+    gap: 10,
   },
   item: {
     height: ITEM_HEIGHT,

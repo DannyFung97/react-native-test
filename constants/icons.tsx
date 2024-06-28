@@ -9,7 +9,7 @@ export const icons: Record<RouteName, (props: any) => JSX.Element> = {
   "(tabs)/Tab1": (props: any) => (
     <Octicons name="video" size={26} color={secondaryColor} {...props} />
   ),
-  "(tabs)/Tab2": (props: any) => (
+  "(tabs)/Profile": (props: any) => (
     <FontAwesome name="user" size={26} color={secondaryColor} {...props} />
   ),
 };

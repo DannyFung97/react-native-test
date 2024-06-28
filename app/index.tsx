@@ -19,8 +19,8 @@ const Index = () => {
         },
       }}
     >
-      <Stack.Screen name="ItemList" component={ItemListScreen} />
-      <Stack.Screen name="ItemDetail" component={ItemDetailScreen} />
+      <Stack.Screen name="Channels" component={ItemListScreen} />
+      <Stack.Screen name="Channel" component={ItemDetailScreen} />
     </Stack.Navigator>
   );
 };

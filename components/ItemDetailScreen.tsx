@@ -4,7 +4,7 @@ import { RouteProp, useRoute } from "@react-navigation/native";
 import { RootStackParamList } from "@/types";
 import { StatusBar } from "expo-status-bar";
 
-type ItemDetailRouteProp = RouteProp<RootStackParamList, "ItemDetail">;
+type ItemDetailRouteProp = RouteProp<RootStackParamList, "Channel">;
 
 const ItemDetailScreen = () => {
   const route = useRoute<ItemDetailRouteProp>();
@@ -13,7 +13,7 @@ const ItemDetailScreen = () => {
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
-      <Text style={styles.title}>Item ID: {slug}</Text>
+      <Text style={styles.title}>channel slug: {slug}</Text>
     </View>
   );
 };
