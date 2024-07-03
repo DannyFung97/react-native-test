@@ -1,7 +1,8 @@
 import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
-import ItemDetailScreen from "../components/ItemDetailScreen";
-import ItemListScreen from "../components/ItemListScreen";
+import ChannelList from "../components/ChannelList";
+import { NavigationContainer } from "@react-navigation/native";
+import ChannelPage from "./(screens)/channels/[slug]";
 
 const Stack = createStackNavigator();
 
@@ -19,8 +20,14 @@ const Index = () => {
         },
       }}
     >
-      <Stack.Screen name="Channels" component={ItemListScreen} />
-      <Stack.Screen name="Channel" component={ItemDetailScreen} />
+      <Stack.Screen name="Channels" component={ChannelList} />
+      <Stack.Screen
+        name="Channel"
+        component={ChannelPage}
+        options={{
+          headerShown: false,
+        }}
+      />
     </Stack.Navigator>
   );
 };

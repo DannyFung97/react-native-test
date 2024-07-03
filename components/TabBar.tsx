@@ -3,11 +3,27 @@ import React from "react";
 import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import TabBarButton from "./TabBarButton";
 
-export type RouteName = "index" | "(tabs)/Tab1" | "(tabs)/Profile";
+export type RouteName = "index" | "(screens)/Tab1" | "(screens)/Profile";
 
 const TabBar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
+  // Define routes where the tab bar should be hidden
+  const hideTabBarRoutes = ["Channel"];
+  // Get the current route and nested route if it exists
+  const currentRoute = state.routes[state.index];
+  const nestedState = currentRoute.state;
+  const nestedRoute =
+    nestedState && nestedState.routes && nestedState.index !== undefined
+      ? nestedState.routes[nestedState.index]
+      : null;
+
+  // Check if the nested route name should hide the tab bar
+  const shouldHideTabBar = nestedRoute
+    ? hideTabBarRoutes.includes(nestedRoute.name)
+    : hideTabBarRoutes.includes(currentRoute.name);
   return (
-    <View style={styles.tabbar}>
+    <View
+      style={[styles.tabbar, shouldHideTabBar ? { display: "none" } : null]}
+    >
       {state.routes.map((route, index) => {
         const { options } = descriptors[route.key];
         const label =

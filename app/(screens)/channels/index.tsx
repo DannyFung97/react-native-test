@@ -1,7 +1,7 @@
-import ItemListScreen from "@/components/ItemListScreen";
+import ChannelList from "@/components/ChannelList";
 
 const ChannelsIndex = () => {
-  return <ItemListScreen />;
+  return <ChannelList />;
 };
 
 export default ChannelsIndex;

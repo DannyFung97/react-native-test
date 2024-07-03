@@ -11,8 +11,6 @@ const Tab1 = () => {
     },
   });
 
-  console.log("nfc feed data", data);
-
   return (
     <View style={styles.container}>
       <StatusBar style="dark" />

@@ -1,4 +1,3 @@
-// app/tabs/ItemListScreen.tsx
 import React, { useCallback } from "react";
 import {
   View,
@@ -18,7 +17,7 @@ import centerEllipses from "@/utils/centerEllipses";
 
 const unlonelyAvatar = "../assets/images/unlonely-icon-192x192.png";
 
-const ItemListScreen = () => {
+const ChannelList = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   const { data, isLoading, isError } = useChannels({
@@ -26,7 +25,7 @@ const ItemListScreen = () => {
   });
 
   const handleItemClick = (item: any) => {
-    navigation.navigate("Channel", { slug: item.id as string });
+    navigation.navigate("Channel", { slug: item.slug as string });
   };
 
   const renderItem = ({ item }: { item: any }) => (
@@ -112,4 +111,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ItemListScreen;
+export default ChannelList;

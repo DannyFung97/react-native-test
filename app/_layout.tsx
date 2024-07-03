@@ -2,6 +2,7 @@ import {
   DarkTheme,
   DefaultTheme,
   ThemeProvider,
+  useNavigationState,
 } from "@react-navigation/native";
 import * as SplashScreen from "expo-splash-screen";
 import "react-native-reanimated";
@@ -50,14 +51,14 @@ export default function RootLayout() {
             }}
           />
           <Tabs.Screen
-            name="(tabs)/Tab1"
+            name="(screens)/Tab1"
             options={{
               tabBarLabel: "NFCs",
               headerShown: false,
             }}
           />
           <Tabs.Screen
-            name="(tabs)/Profile"
+            name="(screens)/Profile"
             options={{
               tabBarLabel: "Profile",
               headerShown: false,

@@ -18,3 +18,36 @@ export const CHANNEL_FEED_QUERY = gql`
     }
   }
 `;
+
+export const CHANNEL_QUERY = gql`
+  query Channel($slug: String!) {
+    getChannelBySlug(slug: $slug) {
+      description
+      livepeerPlaybackId
+      livepeerStreamId
+      streamKey
+      isLive
+      id
+      name
+      allowNFCs
+      vibesTokenPriceRange
+      pinnedChatMessages
+      owner {
+        FCImageUrl
+        lensImageUrl
+        username
+        address
+      }
+      playbackUrl
+      chatCommands {
+        command
+        response
+      }
+      roles {
+        id
+        userAddress
+        role
+      }
+    }
+  }
+`
