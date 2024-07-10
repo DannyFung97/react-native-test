@@ -10,13 +10,26 @@ import IVSPlayer, {
   PlayerState,
 } from "amazon-ivs-react-native-player";
 import { useEffect, useRef, useState } from "react";
+import { Audio, Video } from "expo-av";
+import { LinearGradient } from "expo-linear-gradient";
+import { easeGradient } from "react-native-easing-gradient";
+import { StreamBufferingOverlay } from "./controls/streamBufferingOverlay";
+import { StreamErrorOverlay } from "./controls/streamErrorOverlay";
+import { StreamLoadingOverlay } from "./controls/streamLoadingOverlay";
+import { StreamPlaybackOverlay } from "./controls/streamPlaybackOverlay";
+import { MotiView } from "moti";
 import { useVideoPlayerStore } from "../../store/videoPlayerStore";
 import { useLiveSettingsStore } from "../../store/liveSettingsStore";
+import { Image } from "expo-image";
 
-export function IVSPlayerComponent({
-  awsPlaybackUrl,
+export function StreamPlayer({
+  awsId,
+  thumbnailUrl,
+  name,
 }: {
-  awsPlaybackUrl: string;
+  awsId: string;
+  thumbnailUrl: any;
+  name: string;
 }) {
   const { width } = useWindowDimensions();
   const {
@@ -59,6 +72,14 @@ export function IVSPlayerComponent({
     mediaPlayerRef.current?.play();
     setIsPlaying(true);
 
+    Audio.setAudioModeAsync({
+      staysActiveInBackground: true,
+      shouldDuckAndroid: false,
+      playThroughEarpieceAndroid: false,
+      allowsRecordingIOS: false,
+      playsInSilentModeIOS: true,
+    });
+
     // startLiveStreamPlaying();
     stopNFCPlaying();
   };
@@ -85,6 +106,16 @@ export function IVSPlayerComponent({
   }, [overlayTapped]);
 
   useEffect(() => {
+    Audio.setAudioModeAsync({
+      staysActiveInBackground: true,
+      shouldDuckAndroid: false,
+      playThroughEarpieceAndroid: false,
+      allowsRecordingIOS: false,
+      playsInSilentModeIOS: true,
+    });
+  }, []);
+
+  useEffect(() => {
     if (isAudioOnly) {
       pressPause();
     }
@@ -105,7 +136,7 @@ export function IVSPlayerComponent({
           key={streamPlayerKey}
           style={styles.videoPlayer}
           resizeMode="aspectFit"
-          streamUrl={awsPlaybackUrl}
+          streamUrl={`https://0ef8576db087.us-west-2.playback.live-video.net/api/video/v1/us-west-2.500434899882.channel.${awsId}.m3u8`}
           initialBufferDuration={0.2}
           onLiveLatencyChange={(latency) => {
             // console.log('live latency: ', latency);
@@ -148,10 +179,109 @@ export function IVSPlayerComponent({
           liveLowLatency={true}
           ref={mediaPlayerRef}
         />
+        <Pressable
+          onPress={() => {
+            //  fade in controls after tap
+            setOverlayTapped(true);
+          }}
+          style={styles.videoOverlay}
+        >
+          <MotiView
+            style={styles.videoOverlay}
+            pointerEvents={forceOverlayDisplay ? "auto" : "none"}
+            animate={{
+              opacity: forceOverlayDisplay ? 1 : 0,
+            }}
+          >
+            {thumbnailUrl && !isPlaying && (
+              <Image
+                source={thumbnailUrl}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  position: "absolute",
+                }}
+              />
+            )}
+            <LinearGradient
+              colors={colors}
+              locations={locations}
+              start={[0, 1]}
+              end={[0, 0]}
+              style={{
+                width: "100%",
+                height: "100%",
+                position: "absolute",
+              }}
+            />
+            <View
+              style={{
+                position: "absolute",
+                left: 16,
+                top: 24,
+                width: "80%",
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 18,
+                  fontFamily: "NeuePixelSans",
+                  letterSpacing: 0.5,
+                  color: "white",
+                  textAlign: "left",
+                }}
+              >
+                {name}
+              </Text>
+            </View>
+            {overlay === "loading" && <StreamLoadingOverlay />}
+            {overlay === "buffering" && <StreamBufferingOverlay />}
+            {overlay === "error" && (
+              <StreamErrorOverlay error={errorMessage} retry={pressRetry} />
+            )}
+            {overlay === "playback" && (
+              <StreamPlaybackOverlay
+                play={pressPlay}
+                pause={pressPause}
+                playing={isPlaying}
+                latency={latency}
+                togglePip={togglePip}
+              />
+            )}
+          </MotiView>
+        </Pressable>
       </View>
+      <Video
+        // DO NOT REMOVE
+        // this whole component is a hack to get
+        // the audio to play in the background
+        // even when the phone is muted
+        isMuted={false}
+        volume={1}
+        shouldPlay={isPlaying}
+        source={{ uri: "https://i.imgur.com/HRejmKy.mp4" }}
+        style={{
+          position: "absolute",
+          width: 2,
+          height: 2,
+          display: "none",
+        }}
+      />
     </>
   );
 }
+
+const { colors, locations } = easeGradient({
+  // Eased gradient function so it doesn’t look like garbage
+  colorStops: {
+    0: {
+      color: "rgba(0, 0, 0, 1)",
+    },
+    1: {
+      color: "rgba(0, 0, 0, 0.5)",
+    },
+  },
+});
 
 const styles = StyleSheet.create({
   center: {

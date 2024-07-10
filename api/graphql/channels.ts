@@ -22,6 +22,7 @@ export const CHANNEL_FEED_QUERY = gql`
 export const CHANNEL_QUERY = gql`
   query Channel($slug: String!) {
     getChannelBySlug(slug: $slug) {
+      awsId
       description
       livepeerPlaybackId
       livepeerStreamId
@@ -48,6 +49,7 @@ export const CHANNEL_QUERY = gql`
         userAddress
         role
       }
+      thumbnailUrl
     }
   }
 `

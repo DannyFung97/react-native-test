@@ -37,6 +37,8 @@ export type ChannelData = {
     userAddress: string
     role: number
   }
+  thumbnailUrl: string
+  awsId: string
 }
 
 export const fetchChannel = async (params: ChannelInput): Promise<ChannelResponse> => {

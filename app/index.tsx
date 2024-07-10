@@ -1,3 +1,7 @@
+import "fast-text-encoding";
+import "react-native-get-random-values";
+import "@ethersproject/shims";
+
 import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 import ChannelList from "../components/ChannelList";

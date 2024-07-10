@@ -60,12 +60,48 @@ const ChannelList = () => {
     []
   );
 
+  const liveChannels = data?.getChannelFeed.filter(
+    (channel: {
+      id: string;
+      isLive: boolean;
+      name: string;
+      description: string;
+      slug: string;
+      owner: {
+        username: string;
+        address: string;
+        FCImageUrl: string;
+        lensImageUrl: string;
+      };
+      thumbnailUrl: string;
+    }) => channel.isLive
+  );
+
+  const offlineChannels = data?.getChannelFeed.filter(
+    (channel: {
+      id: string;
+      isLive: boolean;
+      name: string;
+      description: string;
+      slug: string;
+      owner: {
+        username: string;
+        address: string;
+        FCImageUrl: string;
+        lensImageUrl: string;
+      };
+      thumbnailUrl: string;
+    }) => !channel.isLive
+  );
+
+  const sortedChannels = (liveChannels ?? []).concat(offlineChannels ?? []);
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="light" />
-      {data?.getChannelFeed && data?.getChannelFeed?.length > 0 && (
+      {sortedChannels.length > 0 && (
         <FlatList
-          data={data.getChannelFeed}
+          data={sortedChannels}
           renderItem={renderItem}
           keyExtractor={(item) => item.id}
           getItemLayout={getItemLayout}
