@@ -6,12 +6,17 @@ export const USER_QUERY = gql`
       address
       username
       signature
-      bio
       powerUserLvl
       videoSavantLvl
       nfcRank
       FCImageUrl
       isFCUser
+      isLensUser
+      lensHandle
+      lensImageUrl
+      channel {
+        slug
+      }
     }
   }
 `;
