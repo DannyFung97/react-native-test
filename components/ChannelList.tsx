@@ -60,39 +60,43 @@ const ChannelList = () => {
     []
   );
 
-  const liveChannels = data?.getChannelFeed.filter(
-    (channel: {
-      id: string;
-      isLive: boolean;
-      name: string;
-      description: string;
-      slug: string;
-      owner: {
-        username: string;
-        address: string;
-        FCImageUrl: string;
-        lensImageUrl: string;
-      };
-      thumbnailUrl: string;
-    }) => channel.isLive
-  );
+  const liveChannels = data?.getChannelFeed
+    .filter(
+      (channel: {
+        id: string;
+        isLive: boolean;
+        name: string;
+        description: string;
+        slug: string;
+        owner: {
+          username: string;
+          address: string;
+          FCImageUrl: string;
+          lensImageUrl: string;
+        };
+        thumbnailUrl: string;
+      }) => channel.isLive
+    )
+    .sort((a, b) => (a.owner.username > b.owner.username ? 1 : -1));
 
-  const offlineChannels = data?.getChannelFeed.filter(
-    (channel: {
-      id: string;
-      isLive: boolean;
-      name: string;
-      description: string;
-      slug: string;
-      owner: {
-        username: string;
-        address: string;
-        FCImageUrl: string;
-        lensImageUrl: string;
-      };
-      thumbnailUrl: string;
-    }) => !channel.isLive
-  );
+  const offlineChannels = data?.getChannelFeed
+    .filter(
+      (channel: {
+        id: string;
+        isLive: boolean;
+        name: string;
+        description: string;
+        slug: string;
+        owner: {
+          username: string;
+          address: string;
+          FCImageUrl: string;
+          lensImageUrl: string;
+        };
+        thumbnailUrl: string;
+      }) => !channel.isLive
+    )
+    .sort((a, b) => (a.owner.username > b.owner.username ? 1 : -1));
 
   const sortedChannels = (liveChannels ?? []).concat(offlineChannels ?? []);
 

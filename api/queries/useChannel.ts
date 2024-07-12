@@ -36,7 +36,7 @@ export type ChannelData = {
     id: number
     userAddress: string
     role: number
-  }
+  }[]
   thumbnailUrl: string
   awsId: string
 }

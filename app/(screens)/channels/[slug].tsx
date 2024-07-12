@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -6,6 +6,9 @@ import {
   Button,
   Dimensions,
   Linking,
+  FlatList,
+  TouchableOpacity,
+  SafeAreaView,
 } from "react-native";
 import {
   NavigationProp,
@@ -19,8 +22,25 @@ import { useChannel } from "@/api/queries/useChannel";
 import { useLivepeerStreamData } from "@/hooks/useLivepeerStreamData";
 import { Player } from "@/components/player/Player";
 import WebView from "react-native-webview";
+import { InboundMessage, Realtime } from "ably";
+import { Message, SenderStatus } from "@/constants/types";
+import { CHAT_MESSAGE_EVENT } from "@/constants";
+import { getColorFromString } from "@/utils/colors";
+import { ThemedText } from "@/components/ThemedText";
+import centerEllipses from "@/utils/centerEllipses";
+
+const ITEM_HEIGHT = 100; // Example fixed height for items
+
+export type Role = {
+  address: string;
+  role: number;
+};
+
+const userAddress = "0x855CeD56EFc089Ba560c5E833A6f4A9E3ed4DA1F";
 
 type ItemDetailRouteProp = RouteProp<RootStackParamList, "Channel">;
+
+const ably = new Realtime(String(process.env.EXPO_PUBLIC_ABLY_API_KEY));
 
 const CHAT_WEBVIEW_URL = "https://www.unlonely.app/mobile/chat";
 
@@ -30,27 +50,90 @@ const ChannelPage = () => {
   const route = useRoute<ItemDetailRouteProp>();
   const { slug } = route.params;
 
-  const webViewRef = useRef<WebView>(null);
-  const [finishedLoading, setFinishedLoading] = useState(false);
-  const [chatEnabled, setChatEnabled] = useState(false);
-  const [chatKey, setChatKey] = useState(0);
+  const channel = ably.channels.get(`persistMessages:${slug}-chat-channel`);
 
-  const openExternalLink = (url: string): void => {
-    Linking.canOpenURL(url).then((supported) => {
-      if (supported) Linking.openURL(url);
-    });
+  const [receivedMessages, setReceivedMessages] = useState<Message[]>([]);
+  const [allMessages, setAllMessages] = useState<Message[]>([]);
+  const [hasMessagesLoaded, setHasMessagesLoaded] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [localBanList, setLocalBanList] = useState<string[] | undefined>(
+    undefined
+  );
+
+  const [message, setMessage] = useState("");
+
+  const callbackOnMessage = (message: InboundMessage) => {
+    console.log("message", message);
+    setHasMessagesLoaded(false);
+
+    if (localBanList === undefined) {
+      setHasMessagesLoaded(true);
+      return;
+    }
+
+    const adjustedMessage = message as Message;
+    setAllMessages((prevAllMessages) => [...prevAllMessages, adjustedMessage]);
+
+    if (message.name === CHAT_MESSAGE_EVENT) {
+      setReceivedMessages((prevReceivedMessages) => {
+        const messageHistory = prevReceivedMessages.filter(
+          (m) => m.name === CHAT_MESSAGE_EVENT
+        );
+        console.log(
+          "current",
+          messageHistory.map((m) => m.data.messageText),
+          adjustedMessage.data.messageText,
+          adjustedMessage.name
+        );
+
+        if (localBanList.length === 0) {
+          console.log("no bans");
+          return [...prevReceivedMessages, adjustedMessage];
+        } else {
+          if (userAddress && localBanList.includes(userAddress)) {
+            console.log("banned");
+            // Current user is banned, they see all messages
+            return [...prevReceivedMessages, adjustedMessage];
+          } else {
+            // Current user is not banned, they only see messages from non-banned users
+            if (!localBanList.includes(message.data.address)) {
+              console.log("not banned");
+              return [...prevReceivedMessages, adjustedMessage];
+            }
+          }
+        }
+        return prevReceivedMessages;
+      });
+    }
+
+    setHasMessagesLoaded(true);
   };
 
-  const catchWebViewNavigationStateChange = (newNavState: any) => {
-    const { url } = newNavState;
+  useEffect(() => {
+    channel.subscribe((message) => callbackOnMessage(message));
 
-    if (!url.includes(CHAT_WEBVIEW_URL)) {
-      webViewRef?.current?.stopLoading();
-      openExternalLink(url);
-      setChatEnabled(true);
-      setFinishedLoading(true);
-      webViewRef?.current?.reload();
-    }
+    return () => {
+      channel.unsubscribe();
+    };
+  }, []);
+
+  const sendMessage = () => {
+    channel.publish({
+      name: CHAT_MESSAGE_EVENT,
+      data: {
+        messageText: message,
+        username: "2333",
+        chatColor: getColorFromString("2333"),
+        isFC: false,
+        isLens: false,
+        lensHandle: "",
+        address: "00",
+        channelUserRank: 0,
+        isGif: false,
+        senderStatus: SenderStatus.USER,
+        body: undefined,
+      },
+    });
   };
 
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -62,82 +145,114 @@ const ChannelPage = () => {
   } = useChannel({
     slug,
   });
+  const [channelRoles, setChannelRoles] = useState<Role[]>([]);
 
   const channelData = data?.getChannelBySlug;
 
-  const { playbackInfo, checkedForLivepeerPlaybackInfo } =
-    useLivepeerStreamData({ channelData });
+  useEffect(() => {
+    if (channelData?.roles) {
+      const filteredArray = channelData?.roles.filter(
+        (
+          role
+        ): role is {
+          id: number;
+          userAddress: string;
+          role: number;
+        } => role !== null
+      );
+      setChannelRoles(
+        filteredArray.map((r) => {
+          return {
+            address: r.userAddress,
+            role: r.role,
+          };
+        })
+      );
+    }
+  }, [channelData?.roles]);
 
-  const htmlContent = `
-    <iframe
-      width="100%"
-      height="50%"
-      src=${`https://lvpr.tv?v=${channelData?.livepeerPlaybackId}`}
-      frameborder="0"
-      allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-    />
-  `;
+  useEffect(() => {
+    if (!channelRoles) {
+      setLocalBanList(undefined);
+      return;
+    }
+    const filteredUsersToBan = (channelRoles ?? [])
+      .filter((user) => user?.role === 1)
+      .map((user) => user?.address) as string[];
+    setLocalBanList(filteredUsersToBan);
+  }, [channelRoles]);
+
+  useEffect(() => {
+    async function getMessages() {
+      console.log("1");
+      if (!channel || localBanList === undefined) return;
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      console.log("2");
+      const hist = await channel.history();
+      console.log("result", hist, hist.items);
+      const messageHistory = hist.items.filter((message: any) => {
+        if (message.name !== CHAT_MESSAGE_EVENT) return false;
+        const senderIsBanned = localBanList.includes(message.data.address);
+        // For non-banned users or users without a userAddress
+        if (!userAddress || !localBanList.includes(userAddress)) {
+          return !senderIsBanned;
+        }
+        // For banned users
+        return true; // See all messages
+      });
+      const reverse = [...messageHistory].reverse();
+      console.log("reverse", reverse);
+      setReceivedMessages(reverse as Message[]);
+      setMounted(true);
+    }
+    getMessages();
+  }, [channel, localBanList, userAddress]);
+
+  const renderItem = ({ item }: { item: Message }) => (
+    <TouchableOpacity style={styles.item}>
+      <View>
+        <ThemedText>{item.data.messageText}</ThemedText>
+      </View>
+    </TouchableOpacity>
+  );
 
   return (
-    <View style={styles.container}>
-      {/* <StatusBar style="light" /> */}
-      {/* <Text style={styles.title}>
-        {isDataLoading ? "loading" : data?.getChannelBySlug.owner.address}
-      </Text>
-      {checkedForLivepeerPlaybackInfo && channelData && (
-        <Player playbackData={channelData} />
-      )} */}
-      {/* {channelData && (
-        <View style={styles.webviewContainer}>
-          <WebView
-            source={{ html: htmlContent }}
-            javaScriptEnabled={true}
-            domStorageEnabled={true}
-            startInLoadingState={true}
-            style={styles.webview}
-            useWebKit={true}
-          />
-        </View>
-      )} */}
-      <View style={styles.videoContainer}>
-        <WebView
-          javaScriptEnabled={true}
-          domStorageEnabled={true}
-          startInLoadingState={true}
-          allowsInlineMediaPlayback={true}
-          mediaPlaybackRequiresUserAction={false}
-          source={{
-            uri: `https://lvpr.tv?v=${channelData?.livepeerPlaybackId}`,
-          }}
-        />
-      </View>
-
+    <SafeAreaView style={styles.container}>
       <View style={styles.chatContainer}>
         <Button
           title="Back to First Screen"
           onPress={() => navigation.goBack()}
         />
-        <WebView
-          // key={chatKey}
-          source={{
-            uri: `https://unlonely.app/mobile/chat/${slug}`,
-            // html: "<h1>hi</h1>",
-          }}
-        />
       </View>
-    </View>
+      <FlatList
+        data={receivedMessages}
+        keyExtractor={(item) => item.id}
+        getItemLayout={(data: any, index: number) => ({
+          length: ITEM_HEIGHT,
+          offset: ITEM_HEIGHT * index,
+          index,
+        })}
+        initialNumToRender={20} // Adjust based on the expected screen size
+        maxToRenderPerBatch={10} // Adjust based on performance
+        windowSize={5} // Adjust based on performance
+        renderItem={renderItem}
+      />
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // justifyContent: "center",
-    // alignItems: "center",
-    // backgroundColor: "#fff",
+    backgroundColor: "#fff",
   },
-  title: {
-    fontSize: 24,
+  item: {
+    height: ITEM_HEIGHT,
+    justifyContent: "center",
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ccc",
   },
   videoContainer: {
     height: screenHeight / 3, // Set container height to half the screen height
