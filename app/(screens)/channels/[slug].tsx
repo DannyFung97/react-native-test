@@ -9,6 +9,9 @@ import {
   FlatList,
   TouchableOpacity,
   SafeAreaView,
+  TextInput,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
 } from "react-native";
 import {
   NavigationProp,
@@ -59,6 +62,7 @@ const ChannelPage = () => {
   const [localBanList, setLocalBanList] = useState<string[] | undefined>(
     undefined
   );
+  const [isAtBottom, setIsAtBottom] = useState(false);
 
   const [message, setMessage] = useState("");
 
@@ -184,13 +188,8 @@ const ChannelPage = () => {
 
   useEffect(() => {
     async function getMessages() {
-      console.log("1");
       if (!channel || localBanList === undefined) return;
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      console.log("2");
       const hist = await channel.history();
-      console.log("result", hist, hist.items);
       const messageHistory = hist.items.filter((message: any) => {
         if (message.name !== CHAT_MESSAGE_EVENT) return false;
         const senderIsBanned = localBanList.includes(message.data.address);
@@ -202,7 +201,6 @@ const ChannelPage = () => {
         return true; // See all messages
       });
       const reverse = [...messageHistory].reverse();
-      console.log("reverse", reverse);
       setReceivedMessages(reverse as Message[]);
       setMounted(true);
     }
@@ -217,15 +215,36 @@ const ChannelPage = () => {
     </TouchableOpacity>
   );
 
+  const flatListRef = useRef<FlatList<Message>>(null);
+
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
+    const isScrolledToBottom =
+      layoutMeasurement.height + contentOffset.y >= contentSize.height - 20; // Adding some tolerance
+
+    setIsAtBottom(isScrolledToBottom);
+  };
+
+  useEffect(() => {
+    if (receivedMessages.length > 0 && isAtBottom && mounted) {
+      flatListRef.current?.scrollToIndex({
+        index: receivedMessages.length - 1,
+        animated: true,
+      });
+    }
+  }, [isAtBottom, receivedMessages]);
+
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.chatContainer}>
+      <View>
         <Button
           title="Back to First Screen"
           onPress={() => navigation.goBack()}
         />
       </View>
       <FlatList
+        ref={flatListRef}
+        style={styles.chatContainer}
         data={receivedMessages}
         keyExtractor={(item) => item.id}
         getItemLayout={(data: any, index: number) => ({
@@ -237,7 +256,23 @@ const ChannelPage = () => {
         maxToRenderPerBatch={10} // Adjust based on performance
         windowSize={5} // Adjust based on performance
         renderItem={renderItem}
+        onScroll={handleScroll}
+        scrollEventThrottle={16} // Adjust the frequency of scroll events
+        contentContainerStyle={{ paddingBottom: 20 }} // Add some padding to the bottom
       />
+      {/* <View style={{ flexDirection: "row", display: "flex" }}>
+        <TextInput
+          style={{
+            height: 40,
+            borderColor: "gray",
+            borderWidth: 1,
+            width: "80%",
+          }}
+          onChangeText={(text) => setMessage(text)}
+          value={message}
+        />
+        <Button onPress={sendMessage} title="Send" />
+      </View> */}
     </SafeAreaView>
   );
 };
